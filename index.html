@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>비용 현황</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Arial', '맑은 고딕', sans-serif; background: #f4f6f9; min-height: 100vh; }
+
+  /* 탭 네비게이션 */
+  .tab-nav {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .tab-nav .logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-right: 40px;
+    padding: 18px 0;
+    white-space: nowrap;
+  }
+  .tab-btn {
+    padding: 20px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #a0aec0;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .tab-btn:hover { color: #4a5568; }
+  .tab-btn.active-income  { color: #2b6cb0; border-bottom-color: #2b6cb0; }
+  .tab-btn.active-expense { color: #c53030; border-bottom-color: #c53030; }
+
+  /* 콘텐츠 패널 */
+  .panel { display: none; padding: 36px 40px; max-width: 1140px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* 공통 */
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 22px; padding-bottom: 12px; }
+  .summary-box { border-radius: 10px; padding: 20px 28px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; color: white; }
+  .summary-box .label { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+  .summary-box .amount { font-size: 26px; font-weight: 700; }
+  .summary-box .count { font-size: 13px; opacity: 0.85; }
+
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  thead th { padding: 13px 16px; text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+  thead th:nth-child(2) { text-align: right; }
+  tbody tr { border-bottom: 1px solid #edf2f7; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 11px 16px; font-size: 13px; color: #2d3748; vertical-align: middle; }
+  tbody td:nth-child(2) { text-align: right; font-weight: 600; font-family: 'Courier New', monospace; }
+  tbody td:nth-child(3) { color: #4a5568; }
+  tfoot td { padding: 13px 16px; font-weight: 700; font-size: 14px; }
+  tfoot td:nth-child(2) { text-align: right; font-family: 'Courier New', monospace; font-size: 15px; }
+
+  .footer { text-align: right; margin-top: 10px; font-size: 11px; color: #a0aec0; }
+
+  /* 수입 전용 */
+  #income h1 { color: #1a365d; border-bottom: 3px solid #2b6cb0; }
+  #income .summary-box { background: #2b6cb0; }
+  #income thead tr { background: #2b6cb0; color: white; }
+  #income tbody tr:hover { background: #ebf4ff; }
+  #income tbody td:nth-child(1) { font-weight: 600; color: #2b6cb0; }
+  #income tbody td:nth-child(2) { color: #276749; }
+  #income tbody td:nth-child(4), #income tbody td:nth-child(5) { text-align: center; color: #718096; font-size: 12px; }
+  #income tbody td:nth-child(6) { color: #718096; font-size: 12px; }
+  #income tfoot tr { background: #ebf8ff; border-top: 2px solid #2b6cb0; }
+  #income tfoot td { color: #1a365d; }
+  #income tfoot td:nth-child(2) { color: #276749; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .fct-y { background: #c6f6d5; color: #276749; }
+  .fct-n { background: #fed7d7; color: #c53030; }
+
+  /* 지출 전용 */
+  #expense h1 { color: #742a2a; border-bottom: 3px solid #c53030; }
+  #expense .summary-box { background: #c53030; }
+  #expense thead tr { background: #c53030; color: white; }
+  #expense tbody tr:hover { background: #fff5f5; }
+  #expense tbody tr.main-row td:nth-child(1) { font-weight: 700; color: #c53030; }
+  #expense tbody td:nth-child(2) { color: #742a2a; }
+  #expense tbody td:nth-child(4), #expense tbody td:nth-child(5) { text-align: center; color: #718096; font-size: 12px; }
+  #expense tbody td:nth-child(6) { text-align: center; }
+  #expense tbody td:nth-child(7) { color: #718096; font-size: 12px; }
+  #expense tfoot tr { background: #fff5f5; border-top: 2px solid #c53030; }
+  #expense tfoot td { color: #742a2a; }
+  #expense tbody tr.category-group { background: #fef2f2; }
+  #expense tbody tr.category-group:hover { background: #fed7d7; }
+
+  .auto-badge { background: #ebf4ff; color: #2b6cb0; border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- 탭 네비게이션 -->
+<nav class="tab-nav">
+  <div class="logo">📋 비용 현황</div>
+  <button class="tab-btn active-income" onclick="showTab('income', this)">수입</button>
+  <button class="tab-btn" onclick="showTab('expense', this)">지출</button>
+</nav>
+
+<!-- 수입 패널 -->
+<div id="income" class="panel active">
+  <h1>수입 현황</h1>
+  <div class="summary-box">
+    <div>
+      <div class="label">총 수입 금액</div>
+      <div class="amount">947,155,723 원</div>
+    </div>
+    <div style="text-align:right">
+      <div class="label">거래처 수</div>
+      <div class="amount">6</div>
+      <div class="count">건</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>항목</th><th>금액 (원)</th><th>거래처</th><th>결제일</th><th>결제주기</th><th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>물품대</td><td>21,492,611</td><td>COASIA ITSWELL</td><td>말일</td><td>30일 결제</td><td><span class="badge fct-n">FCT ✗</span></td></tr>
+      <tr><td>물품대</td><td>342,431,963</td><td>ESTEC VINA</td><td>말일</td><td>30일 결제</td><td><span class="badge fct-y">FCT ✓</span></td></tr>
+      <tr><td>물품대</td><td>89,853,040</td><td>ESTEC PHU THO</td><td>15일, 말일</td><td>45일 결제</td><td><span class="badge fct-y">FCT ✓</span></td></tr>
+      <tr><td>물품대</td><td>114,137,149</td><td>INFAC VINA</td><td>말일</td><td>60일 결제</td><td><span class="badge fct-y">FCT ✓</span></td></tr>
+      <tr><td>물품대</td><td>348,525,637</td><td>인팩일렉스</td><td>말일</td><td>30일 결제</td><td></td></tr>
+      <tr><td>물품대</td><td>30,715,323</td><td>포에스텍</td><td>말일</td><td>30일 결제</td><td></td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td>합계</td><td>947,155,723</td><td colspan="4"></td></tr>
+    </tfoot>
+  </table>
+  <div class="footer">단위: 원 &nbsp;|&nbsp; 생성일: 2026-04-21</div>
+</div>
+
+<!-- 지출 패널 -->
+<div id="expense" class="panel">
+  <h1>지출 현황</h1>
+  <div class="summary-box">
+    <div>
+      <div class="label">총 지출 금액</div>
+      <div class="amount" id="totalAmount">계산 중...</div>
+    </div>
+    <div style="text-align:right">
+      <div class="label">자동이체 항목</div>
+      <div class="amount" id="autoCount">-</div>
+      <div class="count">건</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>항목</th><th>금액 (원)</th><th>거래처</th><th>결제일</th><th>결제주기</th><th>자동이체</th><th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="main-row"><td>외주가공비</td><td data-amount="250000000">250,000,000</td><td>신성이피 비나</td><td>5일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>구매확인서</td><td data-amount="10000">10,000</td><td>기업은행</td><td>5일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>대출이자</td><td data-amount="4000000">4,000,000</td><td>기업은행</td><td>5일</td><td></td><td><span class="auto-badge">자동</span></td><td>중소회전대출_10억(5.172%)</td></tr>
+      <tr class="main-row"><td>대출이자</td><td data-amount="400000">400,000</td><td>기업은행</td><td>6일</td><td></td><td><span class="auto-badge">자동</span></td><td>마이너스통장(5.1201%)</td></tr>
+      <tr class="main-row"><td>급여</td><td data-amount="38462760">38,462,760</td><td>직원</td><td>6일</td><td></td><td></td><td>사업소득 포함</td></tr>
+      <tr class="main-row"><td>임대료</td><td data-amount="20900000">20,900,000</td><td>인프라일렉</td><td>10일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>관리비</td><td data-amount="1553750">1,553,750</td><td>인프라일렉</td><td>10일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>전기요금</td><td data-amount="3658047">3,658,047</td><td>인프라일렉</td><td>10일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>식대</td><td data-amount="689000">689,000</td><td>인프라일렉</td><td>10일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>4대보험</td><td data-amount="2785820">2,785,820</td><td>보험공단</td><td>10일</td><td></td><td><span class="auto-badge">자동</span></td><td></td></tr>
+      <tr class="main-row"><td>국민연금 보험료</td><td data-amount="95000">95,000</td><td>연금공단</td><td>10일</td><td></td><td></td><td>류인화 국민연금 대납</td></tr>
+      <tr class="main-row"><td>원천세</td><td data-amount="2547010">2,547,010</td><td>세무서 및 구청</td><td>10일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>수출통관비</td><td data-amount="52800">52,800</td><td>논스톱관세사</td><td>10일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>베트남 특송료</td><td data-amount="51853">51,853</td><td>아이앤제이</td><td>13일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>수출제비용</td><td data-amount="10637742">10,637,742</td><td>유피알</td><td>15일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>수출부가세관세</td><td data-amount="20393490">20,393,490</td><td>유피알</td><td>15일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>법인카드 대금</td><td data-amount="6930116">6,930,116</td><td>기업카드</td><td>15일</td><td></td><td><span class="auto-badge">자동</span></td><td></td></tr>
+      <tr class="main-row"><td>생수</td><td data-amount="16200">16,200</td><td>코웨이</td><td>20일</td><td></td><td><span class="auto-badge">자동</span></td><td></td></tr>
+      <tr class="main-row"><td>인터넷+전화</td><td data-amount="50000">50,000</td><td>LGU+</td><td>20일</td><td></td><td><span class="auto-badge">자동</span></td><td></td></tr>
+      <tr class="main-row"><td>경비시스템</td><td data-amount="110000">110,000</td><td>에스원</td><td>23일</td><td></td><td><span class="auto-badge">자동</span></td><td></td></tr>
+      <tr class="main-row"><td>대출이자</td><td data-amount="1200000">1,200,000</td><td>기업은행</td><td>23일</td><td></td><td><span class="auto-badge">자동</span></td><td>수원시육성자금_5억(2.679%)</td></tr>
+      <tr class="main-row"><td>기부금</td><td data-amount="30000">30,000</td><td>세이브더칠드런</td><td>25일</td><td></td><td><span class="auto-badge">자동</span></td><td>영업일 선출금</td></tr>
+      <tr class="main-row"><td>전자무역서비스</td><td data-amount="28820">28,820</td><td>한국무역통신</td><td>25일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="854700">854,700</td><td>CROWN ZENITH</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="17899127">17,899,127</td><td>BEENNIC</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="15732178">15,732,178</td><td>ASAHI</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="8029593">8,029,593</td><td>SIN YOUNG</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="12013591">12,013,591</td><td>CONFEX</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="10178536">10,178,536</td><td>SUNCHING</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="7572827">7,572,827</td><td>TIEN THINH</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="5272117">5,272,117</td><td>WONDERFUL</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료(외화)</td><td data-amount="2643872">2,643,872</td><td>CNA</td><td>25일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row"><td>대출이자</td><td data-amount="4000000">4,000,000</td><td>기업은행</td><td>25일</td><td></td><td><span class="auto-badge">자동</span></td><td>3중고극복_10억(4.935%)</td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="17654938">17,654,938</td><td>위츠</td><td>말일</td><td>60일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="17516271">17,516,271</td><td>두남산업</td><td>말일</td><td>60일 결제</td><td></td><td>면세 및 영세</td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="3259300">3,259,300</td><td>두남산업</td><td>말일</td><td>30일 결제</td><td></td><td>과세</td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="19934365">19,934,365</td><td>디오이앤이</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="47570600">47,570,600</td><td>제이아이티홀딩스</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="19655900">19,655,900</td><td>유니코넥션</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="41786690">41,786,690</td><td>제이에이치케이블</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="64358844">64,358,844</td><td>조은전자</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="2200000">2,200,000</td><td>이스턴</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="10340">10,340</td><td>알에스코리아</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="52573840">52,573,840</td><td>경신전선</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="52530000">52,530,000</td><td>코아시아</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="597696">597,696</td><td>윈시스템즈</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="50872434">50,872,434</td><td>에스와이글로벌</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="12089732">12,089,732</td><td>대영케이블</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="6688000">6,688,000</td><td>현대콘덴서</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="593062">593,062</td><td>만성일렉트로닉스</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="962527">962,527</td><td>영광</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="439340">439,340</td><td>대명전기</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="334400">334,400</td><td>대일코팅</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row category-group"><td>원재료비</td><td data-amount="890120">890,120</td><td>한국단자상사</td><td>말일</td><td>30일 결제</td><td></td><td></td></tr>
+      <tr class="main-row"><td>수출제비용</td><td data-amount="10886045">10,886,045</td><td>유피알</td><td>말일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>수출부가세관세</td><td data-amount="8151170">8,151,170</td><td>유피알</td><td>말일</td><td></td><td></td><td></td></tr>
+      <tr class="main-row"><td>퇴직연금</td><td data-amount="1353010">1,353,010</td><td>기업은행</td><td>말일</td><td></td><td><span class="auto-badge">자동</span></td><td></td></tr>
+      <tr class="main-row"><td>복합기</td><td data-amount="121000">121,000</td><td>바위샘</td><td>말일</td><td></td><td><span class="auto-badge">자동</span></td><td></td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td>합계</td><td id="footerTotal">-</td><td colspan="5"></td></tr>
+    </tfoot>
+  </table>
+  <div class="footer">단위: 원 &nbsp;|&nbsp; 생성일: 2026-04-21</div>
+</div>
+
+<script>
+  function showTab(tabId, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.className = 'tab-btn');
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add(tabId === 'income' ? 'active-income' : 'active-expense');
+  }
+
+  // 지출 합계 계산
+  const cells = document.querySelectorAll('td[data-amount]');
+  let total = 0;
+  cells.forEach(c => total += parseInt(c.dataset.amount));
+  document.getElementById('totalAmount').textContent = total.toLocaleString('ko-KR') + ' 원';
+  document.getElementById('footerTotal').textContent = total.toLocaleString('ko-KR');
+  document.getElementById('autoCount').textContent = document.querySelectorAll('.auto-badge').length;
+</script>
+</body>
+</html>

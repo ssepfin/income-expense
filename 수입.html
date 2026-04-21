@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수입 현황</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Arial', '맑은 고딕', sans-serif; background: #f0f4f8; padding: 32px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 24px; font-weight: 700; color: #1a365d; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 3px solid #2b6cb0; }
+  .summary-box { background: #2b6cb0; color: white; border-radius: 10px; padding: 20px 28px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; }
+  .summary-box .label { font-size: 14px; opacity: 0.85; margin-bottom: 4px; }
+  .summary-box .amount { font-size: 28px; font-weight: 700; }
+  .summary-box .count { font-size: 14px; opacity: 0.85; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  thead tr { background: #2b6cb0; color: white; }
+  thead th { padding: 14px 16px; text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+  thead th:nth-child(2) { text-align: right; }
+  tbody tr { border-bottom: 1px solid #e8edf2; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #ebf4ff; }
+  tbody td { padding: 12px 16px; font-size: 13px; color: #2d3748; }
+  tbody td:nth-child(1) { font-weight: 600; color: #2b6cb0; }
+  tbody td:nth-child(2) { text-align: right; font-weight: 600; font-family: 'Courier New', monospace; color: #276749; }
+  tbody td:nth-child(3) { color: #4a5568; }
+  tbody td:nth-child(4), tbody td:nth-child(5) { text-align: center; color: #718096; font-size: 12px; }
+  tbody td:nth-child(6) { color: #718096; font-size: 12px; }
+  tfoot tr { background: #ebf8ff; border-top: 2px solid #2b6cb0; }
+  tfoot td { padding: 14px 16px; font-weight: 700; font-size: 14px; color: #1a365d; }
+  tfoot td:nth-child(2) { text-align: right; font-family: 'Courier New', monospace; color: #276749; font-size: 15px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .fct-y { background: #c6f6d5; color: #276749; }
+  .fct-n { background: #fed7d7; color: #c53030; }
+  .footer { text-align: right; margin-top: 12px; font-size: 11px; color: #a0aec0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>수입 현황</h1>
+
+  <div class="summary-box">
+    <div>
+      <div class="label">총 수입 금액</div>
+      <div class="amount">947,155,723 원</div>
+    </div>
+    <div style="text-align:right">
+      <div class="label">거래처 수</div>
+      <div class="amount">6</div>
+      <div class="count">건</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>항목</th>
+        <th>금액 (원)</th>
+        <th>거래처</th>
+        <th>결제일</th>
+        <th>결제주기</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>물품대</td>
+        <td>21,492,611</td>
+        <td>COASIA ITSWELL</td>
+        <td>말일</td>
+        <td>30일 결제</td>
+        <td><span class="badge fct-n">FCT ✗</span></td>
+      </tr>
+      <tr>
+        <td>물품대</td>
+        <td>342,431,963</td>
+        <td>ESTEC VINA</td>
+        <td>말일</td>
+        <td>30일 결제</td>
+        <td><span class="badge fct-y">FCT ✓</span></td>
+      </tr>
+      <tr>
+        <td>물품대</td>
+        <td>89,853,040</td>
+        <td>ESTEC PHU THO</td>
+        <td>15일, 말일</td>
+        <td>45일 결제</td>
+        <td><span class="badge fct-y">FCT ✓</span></td>
+      </tr>
+      <tr>
+        <td>물품대</td>
+        <td>114,137,149</td>
+        <td>INFAC VINA</td>
+        <td>말일</td>
+        <td>60일 결제</td>
+        <td><span class="badge fct-y">FCT ✓</span></td>
+      </tr>
+      <tr>
+        <td>물품대</td>
+        <td>348,525,637</td>
+        <td>인팩일렉스</td>
+        <td>말일</td>
+        <td>30일 결제</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>물품대</td>
+        <td>30,715,323</td>
+        <td>포에스텍</td>
+        <td>말일</td>
+        <td>30일 결제</td>
+        <td></td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="1">합계</td>
+        <td>947,155,723</td>
+        <td colspan="4"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="footer">단위: 원 &nbsp;|&nbsp; 생성일: 2026-04-21</div>
+</div>
+</body>
+</html>
